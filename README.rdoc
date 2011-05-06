@@ -3,11 +3,13 @@
 Houdah is a Ruby thrift lib for interfacing with a Hadoop jobtracker.
 
 To install:
-  gem install ganapati
+  gem install houdah
 
 == Starting thrift server
 Houdah expects that you have Cloudera's Hue[https://ccp.cloudera.com/display/SUPPORT/Downloads] installed and working.  As a part of the Hue installation, you will compile and install a thrift interface that runs when the jobtracker is running.  To be clear,
 you do not have to run Hue in order for Houdah to work - you just need to make sure that the org.apache.hadoop.thriftfs.ThriftJobTrackerPlugin is working.
+
+Houdah has been tested with Hue 1.1.0.  If you have it working with a later version of Hue, patches are welcome.
 
 == Basic Usage
   require 'rubygems'
@@ -45,3 +47,7 @@ you do not have to run Hue in order for Houdah to work - you just need to make s
 
   # Quick and dirty way to get the number of killed jobs.  The run class method takes care of closing the client.
   puts Houdah::Client.run("192.168.1.1") { |h| h.jobs(:killed).length }
+
+
+== Bugs / Contact
+Bugs and patches welcome at https://github.com/livingsocial/houdah.
