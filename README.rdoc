@@ -1,86 +1,47 @@
-= ganapati -- Hadoop HDFS Thrift interface for Ruby
+= houdah -- Ruby lib for interacting with a Hadoop JobTracker / TaskTrackers
 
-Ganapati is a Ruby thrift lib for interfacing with Hadoop's distributed file system, HDFS.  It also includes a few command line client utilities.
+Houdah is a Ruby thrift lib for interfacing with a Hadoop jobtracker.
 
 To install:
   gem install ganapati
 
 == Starting thrift server
-Documentation in Hadoop for the thrift interface to HDFS is crap.  It can be found here[http://wiki.apache.org/hadoop/HDFS-APIs].
-  
-As a much simpler and safer way of auto compiling and then starting the thrift interface, use the provided script:
-  bin/hdfs_thrift_server <port>
-
-This will start a thrift server on the given port (after compiling the server code provided in the Hadoop distribution).
+Houdah expects that you have Cloudera's Hue[https://ccp.cloudera.com/display/SUPPORT/Downloads] installed and working.  As a part of the Hue installation, you will compile and install a thrift interface that runs when the jobtracker is running.  To be clear,
+you do not have to run Hue in order for Houdah to work - you just need to make sure that the org.apache.hadoop.thriftfs.ThriftJobTrackerPlugin is working.
 
 == Basic Usage
   require 'rubygems'
-  require 'ganapati'
+  require 'houdah'
 
-  # args are host, port, and optional timeout
-  client = Ganapati::Client.new 'localhost', 1234
+  # args are host, optional port (9290 default), optional username (default "houdah"), and optional timeout
+  client = Houdah::Client.new "192.168.1.1"
 
-  # copy a file to hdfs
-  client.put("/some/file", "/some/hadoop/path")
+  # get list of running jobs
+  client.jobs
   
-  # get a file from hadoop
-  client.get("/some/hadoop/path", "/local/path")
+  # get a list of failed jobs
+  client.jobs(:failed)
 
-  # Create a file
-  f = client.create("/home/someuser/afile.txt")
-  f.write("this is some text")
-  # Always, always close the file
-  f.close 
+  # get jobtracker name
+  client.name
 
-  # Create a file with code block
-  client.create("/home/someuser/afile.txt") { |f|
-    f.write("this is some text")
-  }
+  # get percent mapped / reduced for all running jobs
+  client.jobs.each { |j| puts "#{j.percent_mapped} mapped #{j.percent_reduced} reduced" }
 
-  # Open a file for reading and read it
-  client.open('/home/someuser/afile.txt') { |f| 
-    puts f.read 
-    # or read for specific length from start
-    puts f.read(0, 4)
-  }
+  # get percent done for the most recent job
+  client.jobs.first.percent_done
 
-  # read a file line by line
-  client.readlines('/home/someuser/afile.txt') { |line|
-    puts line
-  }
+  # get the mapred.local.dir config variable for the most recent job
+  puts client.jobs.first.config['mapred.local.dir']
 
-  # Open a file for appending and append to it
-  client.append('/home/someuser/afile.txt') { |f| 
-    f.write "new data" 
-  }	  
+  # get the hive query for the hive job running
+  puts client.jobs.first.config['hive.query.string']
 
-  ## Common file methods are available (chown, chmod, mkdir, stat, etc).  Examples:
-  # move a file
-  client.mv "/home/someuser/afile.txt", "/home/someuser/test.txt"
+  # kill all jobs
+  client.jobs.each { |j| j.kill! }
 
-  # remove a file
-  client.rm "/home/someuser/test.txt"
-
-  # test for file existance
-  client.exists? "/home/someuser/test.txt"
-
-  # get a list of all files
-  client.ls "/home"
-
+  # close the client connection
   client.close
 
-  # Quick and dirty way to print remote file.  The run class method takes care of closing the client.
-  puts Ganapati::Client.run('localhost', 1234) { |c| c.open('/home/someuser/afile.txt') { |f| f.read } } 
-
-== Command Line Utilities
-There are a few utility programs included in the bin directory.  *hls* provides a way to see the contents of HDFS (recursively and verbosely with appropriate command line options):
-  ./bin/hls hdfs://host:port/tmp
-
-*hcp* provides a way to copy to/from/between HDFS servers:
-  ./bin/hcp hdfs://host:port/some/path/to/file ./file
-  ./bin/hcp ./file hdfs://host:port/some/path/to/file
-  ./bin/hcp hdfs://anotherhost:port/some/path/to/file hdfs://host:port/some/path/to/file
-
-
-
-
+  # Quick and dirty way to get the number of killed jobs.  The run class method takes care of closing the client.
+  puts Houdah::Client.run("192.168.1.1") { |h| h.jobs(:killed).length }

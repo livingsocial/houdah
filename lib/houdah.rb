@@ -1,3 +1,4 @@
+require 'houdah/version'
 require 'houdah/client'
 require 'houdah/job'
 

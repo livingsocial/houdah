@@ -1,12 +1,13 @@
 require 'rubygems'
-require 'rake'
+require 'bundler'
 require 'rake/testtask'
 require 'rake/rdoctask'
-require 'rake/gempackagetask'
+
+Bundler::GemHelper.install_tasks
 
 desc "Create documentation"
 Rake::RDocTask.new("doc") { |rdoc|
-  rdoc.title = "HBaseRb - Naive Bayes classifier with HBase storage"
+  rdoc.title = "Houdah - Riding on the back of Hadoop"
   rdoc.rdoc_dir = 'docs'
   rdoc.rdoc_files.include('README.rdoc')
   rdoc.rdoc_files.include('lib/**/*.rb')
@@ -23,25 +24,4 @@ task "regen_thrift" do
   system "mv /tmp/gen-rb/* lib/thrift"
 end
 
-spec = Gem::Specification.new do |s|
-  s.name = "hbaserb"
-  s.version = "0.0.3"
-  s.authors = ["Brian Muller"]
-  s.date = %q{2010-12-03}
-  s.description = "HBase Thrift interface for Ruby"
-  s.summary = "Simple lib for interfaceing with HBase via Ruby and Thrift."
-  s.email = "brian.muller@livingsocial.com"
-  s.files = FileList["lib/**/*"]
-  s.homepage = "http://github.com/bmuller/hbaserb"
-  s.require_paths = ["lib"]
-  s.rubygems_version = "1.3.5"
-  s.add_dependency('nokogiri', '>= 1.4.4') # keep this
-end
-
-Rake::GemPackageTask.new(spec) do |pkg|
-  pkg.need_zip = true
-  pkg.need_tar = true
-end
-
-desc "Default task: builds gem and runs tests"
-task :default => [ :gem, :test ]
+task :default => [ :gem, :doc ]
