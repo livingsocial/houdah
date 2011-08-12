@@ -8,6 +8,7 @@ module Houdah
     def initialize(client, thrift_job)
       @client = client
       @thrift_job = thrift_job
+      @parsed_config = nil
     end
 
     ## Get the job's config XML
@@ -17,7 +18,7 @@ module Houdah
 
     ## Get the job's config, as a Hash
     def config
-      Nokogiri::XML(config_xml).xpath("//property").inject({}) { |props, xprop|
+      @parsed_config ||= Nokogiri::XML(config_xml).xpath("//property").inject({}) { |props, xprop|
         props[xprop.xpath("./name").text] = xprop.xpath("./value").text
         props
       }

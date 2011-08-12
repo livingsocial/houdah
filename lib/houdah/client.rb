@@ -19,13 +19,26 @@ module Houdah
     ## Get jobs.  Type can be :running, :completed, :killed, :failed, or :all
     def jobs(type=:running)
       results = case type
-      when :running then call(:getRunningJobs) 
-      when :completed then call(:getCompletedJobs)
-      when :failed then call(:getFailedJobs)
-      when :killed then call(:getKilledJobs)
-      else call(:getAllJobs)
-      end
+                when :running then call(:getRunningJobs) 
+                when :completed then call(:getCompletedJobs)
+                when :failed then call(:getFailedJobs)
+                when :killed then call(:getKilledJobs)
+                else call(:getAllJobs)
+                end
       results.jobs.map { |j| Job.new(self, j) }
+    end
+
+    def trackers(type=:active)
+      results = case type
+                when :active then call(:getActiveTrackers)
+                when :blacklisted then call(:getBlacklistedTrackers)
+                when :all then call(:getAllTrackers)
+                end
+      results.trackers.map { |t| Tracker.new(self, t) }
+    end  
+
+    def status
+      call :getClusterStatus
     end
 
     def queues

@@ -33,6 +33,16 @@ Houdah has been tested with Hue 1.1.0.  If you have it working with a later vers
   # get percent done for the most recent job
   client.jobs.first.percent_done
 
+  # print out info about each tracker
+  client.trackers.each { |t| puts "#{t.host}: #{t.failureCount} failures, #{t.tasks.length} active tasks" }
+
+  # get number of active / blacklisted trackers
+  client.status.numActiveTrackers
+  client.status.numBlacklistedTrackers
+
+  # get number of excluded nodes
+  client.status.numExcludedNodes
+
   # get the mapred.local.dir config variable for the most recent job
   puts client.jobs.first.config['mapred.local.dir']
 
